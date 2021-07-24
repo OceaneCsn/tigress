@@ -4,11 +4,13 @@
 \name{ecoli}
 \alias{ecoli}
 \title{Data from E. coli}
-\format{A list with 2 elements: \describe{ \item{exp}{A dataframe of
+\format{
+A list with 2 elements: \describe{ \item{exp}{A dataframe of
   expression values (genes in rows, arrays in columns)} \item{reg}{A
   dataframe of regulations between a transcription factor (first column) and
   a target gene (second column). The numbers in the dataframe correspond to
-  row numbers in the \code{exp} dataframe of expressions.} }}
+  row numbers in the \code{exp} dataframe of expressions.} }
+}
 \usage{
 ecoli
 }

@@ -4,8 +4,14 @@
 \alias{stabilityselection}
 \title{Score variable importance with stability selection}
 \usage{
-stabilityselection(x, y, nsplit = 100, nstepsLARS = 20, alpha = 0.2,
-  scoring = "area")
+stabilityselection(
+  x,
+  y,
+  nsplit = 100,
+  nstepsLARS = 20,
+  alpha = 0.2,
+  scoring = "area"
+)
 }
 \arguments{
 \item{x}{The input matrix, each row is a sample, each column a feature.}

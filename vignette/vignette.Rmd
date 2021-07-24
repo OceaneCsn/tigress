@@ -14,6 +14,7 @@ vignette: >
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.show='hold', fig.width=3.4, fig.height=3.4)
 set.seed(4395)
 library(ROCR)
+library(tictoc)
 ```
 
 
@@ -64,7 +65,9 @@ In addition, `tigress` has basically three other parameters that you may want to
 So let's give it a try with the default parameters, except for `nstepLARS` which we increase a bit to be able to explore more values than the default:
 ```{r}
 nstepsLARS = 20
-edgepred <- tigress(t(ecoli$exp), tflist=tfnames, targetlist=targetnames, nstepsLARS = nstepsLARS)
+tic()
+edgepred <- tigress(t(ecoli$exp), tflist=tfnames, targetlist=targetnames, nstepsLARS = nstepsLARS, usemulticore = FALSE)
+toc()
 ```
 The results is matrix where each row is a TF, each column is a candidate target gene, and the value in the matrix can be interpreted as a probability that there is a regulation between each TF and each target gene.
 
