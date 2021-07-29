@@ -62,13 +62,29 @@ In addition, `tigress` has basically three other parameters that you may want to
 * `alpha`, which controls the amount of multiplicative noise we add in the data during stability selection. It can also influence performance. However, as shown in Haury et al. (2012), the default value is often a safe choice.
 * `nsplit` is the number of times to repeat the random subsampling during stability selection. The larger the better! However it directly impact the time `tigress` will take to run. If you multiply `nsplit` by 2, then it will take twice longer to run. You should therefore take is as large as you can afford waiting.
 
+
+
+
+
+
 So let's give it a try with the default parameters, except for `nstepLARS` which we increase a bit to be able to explore more values than the default:
 ```{r}
-nstepsLARS = 20
+nstepsLARS = 5
 tic()
-edgepred <- tigress(t(ecoli$exp), tflist=tfnames, targetlist=targetnames, nstepsLARS = nstepsLARS, usemulticore = FALSE)
+edgepred <- tigress(t(ecoli$exp), tflist=tfnames, targetlist=targetnames, nstepsLARS = nstepsLARS, usemulticore = TRUE, nsplit = 50 )
+toc()
+
+
+nstepsLARS = 5
+tic()
+edgepredglm <- tigress(round(t(ecoli$exp), 0), tflist=tfnames, targetlist=targetnames, nstepsLARS = nstepsLARS, usemulticore = TRUE, nsplit = 50 , model = "glm")
 toc()
 ```
+
+
+
+
+
 The results is matrix where each row is a TF, each column is a candidate target gene, and the value in the matrix can be interpreted as a probability that there is a regulation between each TF and each target gene.
 
 To evaluate the performance of the prediction, we compare it to the known regulatory network.

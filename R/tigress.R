@@ -37,13 +37,23 @@
 #' @param usemulticore A boolean indicating whether multicore parallel computing
 #'   is used. This requires the package \code{parallel} (default \code{FALSE}).
 #'
+#' @param model The model used in the lars. It can be a "linear" for a
+#' linear model, which is
+#' the default, as implemented in the original version of tigress.
+#' However, for non-normal expression values, such as RNA-Seq counts, a
+#' generalized linear model can be used to model expression as a Poisson
+#' distribution, in that case, specify "glm".
+#'
 #' @return A list of matrices (or a single matrix if \code{allsteps=FALSE}) with
 #'   the scores of each TF x target candidate interaction. Each row corresponds
 #'   to a TF, each column to a target.
 #'
 #' @export
 tigress <-
-  function(expdata, tflist=colnames(expdata), targetlist=colnames(expdata), alpha=0.2, nstepsLARS=5, nsplit=100, normalizeexp=TRUE, scoring="area", allsteps=TRUE, verb=FALSE, usemulticore=FALSE)
+  function(expdata, tflist=colnames(expdata), targetlist=colnames(expdata),
+           alpha=0.2, nstepsLARS=5, nsplit=100, normalizeexp=FALSE,
+           scoring="area", allsteps=TRUE, verb=FALSE, usemulticore=FALSE,
+           model="linear")
   {
     # Check if we can run multicore
     if (usemulticore) {
@@ -97,7 +107,10 @@ tigress <-
       targetname <- targetlist[itarget]
       # Find the TF to be used for prediction (all TF except the target if the target is itself a TF)
       predTF <- !match(tflist,targetname,nomatch=0)
-      r <- stabilityselection(as.matrix(expdata[,tfindices[predTF]]), as.matrix(expdata[,targetname]), nsplit=nsplit, nsteps=nstepsLARS, alpha=alpha)
+      r <- stabilityselection(as.matrix(expdata[,tfindices[predTF]]),
+                              as.matrix(expdata[,targetname]),
+                              nsplit=nsplit, nsteps=nstepsLARS,
+                              alpha=alpha, model=model)
       sc <- array(0,dim=c(ntf,scorestokeep),dimnames = list(tflist,seq(scorestokeep)))
       if (allsteps) {
         sc[predTF,] <- t(r)
@@ -123,6 +136,7 @@ tigress <-
     }
     # Rank scores
     edgepred <- list()
+    print(score)
     for (i in seq(scorestokeep)) {
       # Combine all scores in a single vectors
       edgepred[[i]] <- matrix(unlist(lapply(score,function(x) x[,i,drop=FALSE])), nrow=ntf)

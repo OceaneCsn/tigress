@@ -25,6 +25,13 @@
 #'   just compute the stability curve, as propose by Meinshausen and Buhlmann
 #'   (default \code{"area"})
 #'
+#' @param model The model used in the lars. It can be a "linear" for a
+#' linear model, which is
+#' the default, as implemented in the original version of tigress.
+#' However, for non-normal expression values, such as RNA-Seq counts, a
+#' generalized linear model can be used to model expression as a Poisson
+#' distribution, in that case, specify "glm".
+#'
 #' @return A matrix of SS scores. Each column corresponds to a covariate. Each
 #'   row corresponds to a number of LARS steps.
 #'
@@ -39,9 +46,10 @@
 #' s <- stabilityselection(x, y, nsplit=500, nstepsLARS=5)
 #' matplot(s, type='b', lwd=2, ylab="SS area score", xlab="LARS steps")
 stabilityselection <-
-  function(x,y,nsplit=100,nstepsLARS=20,alpha=0.2,scoring="area")
+  function(x,y,nsplit=100,nstepsLARS=20,alpha=0.2,scoring="area", model="linear")
   {
     if (!is.numeric(y) || sd(y)==0) stop("y should be a vector of scalars not constant.")
+    if (model != "linear"  && model != "glm") stop("Model attribute should be either glm or poisson")
     n <- nrow(x)
     p <- ncol(x)
     halfsize <- as.integer(n/2)
@@ -61,20 +69,34 @@ stabilityselection <-
         if (max(sd(y[i1]),sd(y[i2]))>0) {badsplit=FALSE}
       }
 
+      # controls for the dglars approach (glm model)
+      control = list(method = "dgLARS", nv = nstepsLARS)
+
       # run LARS on each randomized, sample and check which variables are selected
       if (sd(y[i1]>0)) {
-        r <- lars(xs[i1,],y[i1],max.steps=nstepsLARS,normalize=FALSE,trace=FALSE)
+        if(model == "linear")
+          r <- lars(xs[i1,],y[i1],max.steps=nstepsLARS,normalize=FALSE,trace=FALSE)
+        if(model == "glm")
+          r <- dglars::dglars.fit(X = xs[i1,], y = y[i1], family = poisson("log"),
+                      control = control)
+
         freq<-freq + abs(sign(r$beta[2:(nstepsLARS+1),]))
         i <- i+1
       }
       if (sd(y[i2]>0)) {
-        r <- lars(xs[i2,],y[i2],max.steps=nstepsLARS,normalize=FALSE,trace=FALSE)
+
+        if(model == "linear")
+          r <- lars(xs[i2,],y[i2],max.steps=nstepsLARS,normalize=FALSE,trace=FALSE)
+        if(model == "glm")
+          r <- dglars::dglars.fit(X = xs[i2,], y = y[i2], family = poisson("log"),
+                      control = control)
+
         freq<-freq + abs(sign(r$beta[2:(nstepsLARS+1),]))
         i <- i+1
       }
     }
 
-    # normalize frequence in [0,1] to get the stability curves
+    # normalize frequency in [0,1] to get the stability curves
     freq <- freq/i
 
     # Compute normalized area under the stability curve
