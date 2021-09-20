@@ -14,15 +14,20 @@ vignette: >
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.show='hold', fig.width=3.4, fig.height=3.4)
 set.seed(4395)
 library(ROCR)
+library(AraNetBench)
 library(tictoc)
+library(DIANE)
 ```
 
 
 ## Introduction
 
+This package is an update of `tigress` to dela with RNASeq data non-normality, as pointed out in [this issue](https://github.com/jpvert/tigress/issues/6).
+
 `tigress` implements the TIGRESS model of Haury et al. (2012) to infer a gene regulatory network from gene expression data. The inputs of `tigress` are a matrix of gene expression data, a list of known transcription factors among the genes, and a list target genes. The output is a scoring of all potential regulations from a transcription factor to a target gene. To obtain a gene regulatory network, one can just keep regulations with a score above a user-defined threshold.
 
 In this vignette we illustrate the use of `tigress` to reconstruct the gene regulatory network of the E. coli bacteria. Before we start, we need to load the `tigress` package:
+
 ```{r}
 library(tigress)
 ```
@@ -33,9 +38,11 @@ The `tigress` package comes with a dataset for E. coli, in the `ecoli` variable.
 
 Let us first look at the gene expression matrix:
 ```{r}
-dim(ecoli$exp)
-ecoli$exp[1:5,1:3]
-genenames <- rownames(ecoli$exp)
+data("abiotic_stress_Heat_genes_net")
+data("abiotic_stresses")
+expr <- abiotic_stresses$raw_counts
+dim(expr)
+genenames <- rownames(expr)
 ```
 We also have a set of known regulatory interactions between transcription factors and their targets. It is stored in `ecoli$reg`, a matrix with two columns, where each row represents an interaction. The first column is the index of the transcription factor, the second column is the index of the target gene. Indices refer to the row number in the expression matrix.
 ```{r}
@@ -55,6 +62,7 @@ ntarget
 ```
 
 ## Run TIGRESS
+
 To infer a gene network from a matrix of expression, we use the `tigress` function. We provide the expression matrix as `t(ecoli$exp)` to the `tigress` function, because `tigress` requires the genes in rows and not in colunms. We also provide the list of TFs and targets.
 
 In addition, `tigress` has basically three other parameters that you may want to change:

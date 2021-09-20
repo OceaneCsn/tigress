@@ -5,7 +5,12 @@ Version: 0.1.0
 Author: Jean-Philippe Vert
 Maintainer: Jean-Philippe Vert <jean-philippe.vert@m4x.org>
 Description: This package implements the TIGRESS method for gene regulatory network inference from gene expression data
-Depends: lars, ROCR, parallel, foreach
+Depends: 
+    lars,
+    ROCR,
+    parallel,
+    foreach,
+    R (>= 2.10)
 Suggests: foreach
 License: Artistic-2.0
 Encoding: UTF-8
